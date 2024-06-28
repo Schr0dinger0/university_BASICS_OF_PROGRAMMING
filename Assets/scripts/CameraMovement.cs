@@ -8,6 +8,7 @@ public class CameraMovement : MonoBehaviour
     [SerializeField] private Transform target;
     [SerializeField] private Vector3 orthographicOffset = new Vector3(0, 30, 0);
     [SerializeField] private float orthographicSize = 3f;
+    [SerializeField] private float minDistance = 1.0f; // минимальное расстояние от камеры до объекта
 
     private Vector3 previousPosition;
     private Vector3 initialCameraPosition;
@@ -23,7 +24,6 @@ public class CameraMovement : MonoBehaviour
         // Устанавливаем камеру в перспективный режим по умолчанию
         cam.orthographic = false;
         isOrthographic = false;
-
     }
 
     void Update()
@@ -59,6 +59,24 @@ public class CameraMovement : MonoBehaviour
                 cam.transform.Translate(new Vector3(0, 3, -40));
 
                 previousPosition = cam.ScreenToViewportPoint(Input.mousePosition);
+            }
+        }
+
+        // Проверка на столкновения
+        CheckCollision();
+    }
+
+    void CheckCollision()
+    {
+        RaycastHit hit;
+        Vector3 direction = cam.transform.position - target.position;
+        float distance = Vector3.Distance(cam.transform.position, target.position);
+
+        if (Physics.Raycast(target.position, direction, out hit, distance))
+        {
+            if (hit.collider.CompareTag("Table"))
+            {
+                cam.transform.position = hit.point - direction.normalized * minDistance;
             }
         }
     }
